@@ -1,3 +1,5 @@
+/// <reference types="cypress-map" />
+
 const api_server = Cypress.env('api_server')
 
 import {articlePage} from '../pages/articles'
@@ -50,39 +52,43 @@ describe('Create new article, verify , delete E2E API', () => {
 
 describe('Get random article, add comment, verify new comment E2E API', () => {
   const comment = faker.lorem.sentences(1)
-  let getRandomArticle
 
-  beforeEach('Get random article, add comment, verify comment added', () => {
-    articlePage.getAllArticles(api_server).then(response => {
-      const randomSlug = Cypress._.random(0, response.body.articles.length - 1)
-      getRandomArticle = response.body.articles[randomSlug].slug
-      articlePage
-        .addComment(api_server, getRandomArticle, comment)
-        .its('body.comment.id')
-        .as('commentId')
-        .then(commentId => {
-          articlePage
-            .getAllCommentsFromArticle(api_server, getRandomArticle)
-            .its('body.comments')
-            .map('id')
-            .should('include', commentId)
-        })
-    })
+  beforeEach('Get random article, add comment, verify comment added', function () {
+    articlePage
+      .getAllArticles(api_server)
+      .its('body.articles')
+      .sample()
+      .its('slug')
+      .print()
+      .as('getRandomArticle')
+      .then(getRandomArticle => {
+        articlePage
+          .addComment(api_server, getRandomArticle, comment)
+          .its('body.comment.id')
+          .as('commentId')
+          .then(commentId => {
+            articlePage
+              .getAllCommentsFromArticle(api_server, getRandomArticle)
+              .its('body.comments')
+              .map('id')
+              .should('include', commentId)
+          })
+      })
   })
 
   it('Delete comment', function () {
     articlePage
-      .deleteComment(api_server, getRandomArticle, this.commentId)
+      .deleteComment(api_server, this.getRandomArticle, this.commentId)
       .should('have.property', 'status', 200)
   })
 
   it('Verify deleted comment', function () {
     articlePage
-      .deleteComment(api_server, getRandomArticle, this.commentId)
+      .deleteComment(api_server, this.getRandomArticle, this.commentId)
       .should('have.property', 'status', 200)
 
     articlePage
-      .getAllCommentsFromArticle(api_server, getRandomArticle)
+      .getAllCommentsFromArticle(api_server, this.getRandomArticle)
       .its('body.comments')
       .map('id')
       .should('not.include', this.commentId)
