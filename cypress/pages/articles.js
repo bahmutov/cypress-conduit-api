@@ -1,6 +1,8 @@
+/// <reference types="cypress-plugin-api" />
+
 const api_server = Cypress.env('api_server')
 
-class Article {
+export const articlePage = {
   createNewArticle(title, description, articleInfo, tags) {
     return cy.api({
       method: 'POST',
@@ -18,7 +20,7 @@ class Article {
         },
       },
     })
-  }
+  },
 
   getArticleByTitle(title) {
     return cy.api({
@@ -29,7 +31,7 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 
   deleteArticle(title) {
     return cy.api({
@@ -40,7 +42,7 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 
   getAllArticles(api_server) {
     return cy.api({
@@ -50,7 +52,7 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 
   addComment(api_server, title, comment) {
     return cy.api({
@@ -65,9 +67,11 @@ class Article {
         },
       },
     })
-  }
+  },
 
   getAllCommentsFromArticle(api_server, title) {
+    expect(title, 'title').to.be.a('string')
+
     return cy.api({
       method: 'GET',
       url: `${api_server}/articles/${title}/comments`,
@@ -75,7 +79,7 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 
   deleteComment(api_server, title, commentId) {
     return cy.api({
@@ -85,7 +89,7 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 
   getArticleByTag(api_server, tag) {
     return cy.api({
@@ -96,6 +100,6 @@ class Article {
         Authorization: 'Token ' + Cypress.env('token'),
       },
     })
-  }
+  },
 }
-export const articlePage = new Article()
+// export const articlePage = new Article()

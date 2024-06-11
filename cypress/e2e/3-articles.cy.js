@@ -2,6 +2,8 @@ const api_server = Cypress.env('api_server')
 
 import {articlePage} from '../pages/articles'
 import {faker} from '@faker-js/faker'
+import 'cypress-map'
+
 describe('Get all articles', () => {
   it('verify list of the articles', () => {
     articlePage.getAllArticles(api_server).then(response => {
@@ -46,43 +48,43 @@ describe('Create new article, verify , delete E2E API', () => {
   })
 })
 
-describe('Get random article, add comment, verify new comment E2E API', () => {
+describe.only('Get random article, add comment, verify new comment E2E API', () => {
   const comment = faker.lorem.sentences(1)
-  let commentId
-  let getRandomArticle
-  it('Get random article, add comment, verify comment added', () => {
-    articlePage.getAllArticles(api_server).then(response => {
-      const randomSlug = Cypress._.random(0, response.body.articles.length - 1)
-      getRandomArticle = response.body.articles[randomSlug].slug
-      articlePage.addComment(api_server, getRandomArticle, comment).then(res => {
-        commentId = res.body.comment.id
-        cy.wrap(response.body.articles[randomSlug].slug).then(randomArticle => {
-          articlePage.getAllCommentsFromArticle(api_server, randomArticle).then(response => {
-            const ids = []
-            for (let i = 0; i < response.body.comments.length; i++) {
-              ids.push(response.body.comments[i].id)
-            }
-            expect(ids).to.include(commentId)
+
+  beforeEach('Get random article, add comment, verify comment added', () => {
+    articlePage
+      .getAllArticles(api_server)
+      .its('body.articles')
+      .sample()
+      .its('slug')
+      .should('be.a', 'string')
+      .as('randomArticle')
+      .then(slug => {
+        articlePage
+          .addComment(api_server, slug, comment)
+          .its('body.comment.id')
+          .should('be.a', 'number')
+          .as('commentId')
+          .then(commentId => {
+            articlePage
+              .getAllCommentsFromArticle(api_server, slug)
+              .its('body.comments')
+              .map('id')
+              .should('include', commentId)
           })
-        })
       })
-    })
   })
 
-  it('Delete comment', () => {
-    articlePage.deleteComment(api_server, getRandomArticle, commentId).then(res => {
-      expect(res.status).eq(200)
-    })
-  })
+  it.only('deletes a comment', function () {
+    articlePage
+      .deleteComment(api_server, this.randomArticle, this.commentId)
+      .should('have.property', 'status', 200)
 
-  it('Verify deleted comment', () => {
-    articlePage.getAllCommentsFromArticle(api_server, getRandomArticle).then(response => {
-      const ids = []
-      for (let i = 0; i < response.body.comments.length; i++) {
-        ids.push(response.body.comments[i].id)
-      }
-      expect(ids).not.to.include(commentId)
-    })
+    articlePage
+      .getAllCommentsFromArticle(api_server, this.randomArticle)
+      .its('body.comments')
+      .map('id')
+      .should('not.include', this.commentId)
   })
 })
 
