@@ -51,9 +51,9 @@ describe('Create new article, verify , delete E2E API', () => {
 })
 
 describe('Get random article, add comment, verify new comment E2E API', () => {
-  const comment = faker.lorem.sentences(1)
-
   beforeEach('Get random article, add comment, verify comment added', function () {
+    const comment = faker.lorem.sentences(1)
+
     articlePage
       .getAllArticles(api_server)
       .its('body.articles')
