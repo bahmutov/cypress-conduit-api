@@ -1,6 +1,5 @@
 const email = Cypress.env('email')
-const pass = Cypress.env('pass')
-const api_server = Cypress.env('api_server')
+import spok from 'cy-spok'
 import {user} from '../pages/user'
 
 import {faker} from '@faker-js/faker'
@@ -15,9 +14,14 @@ describe('Update user bio', () => {
   })
 
   it('Update bio token ', () => {
-    user.updateUser('', '', bio, '', '').then(response => {
-      cy.wrap(response.body.user.token).should('eq', Cypress.env('token'))
-    })
+    const token = Cypress.env('token')
+    expect(token, 'token').to.be.a('string').and.not.be.empty
+
+    user.updateUser('', '', bio, '', '').its('body.user').should(
+      spok({
+        token,
+      })
+    )
   })
 
   it('Update bio verify email ', () => {
