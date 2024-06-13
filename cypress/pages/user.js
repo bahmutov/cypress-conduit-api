@@ -1,5 +1,5 @@
 class User {
-  updateUser(image, username, bio, email, password) {
+  updateUser(user) {
     return cy.api({
       method: 'PUT',
       url: 'https://conduit-api.bondaracademy.com/api/user',
@@ -7,13 +7,7 @@ class User {
         Authorization: 'Token ' + Cypress.env('token'),
       },
       body: {
-        user: {
-          image,
-          username,
-          bio,
-          email,
-          password,
-        },
+        user,
       },
     })
   }
